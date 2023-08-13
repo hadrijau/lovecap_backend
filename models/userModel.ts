@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>({
   interestedBy: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
   ageOfInterest: [0, 100],
-  handicap: { type: String, required: true },
+  handicap: { type: String, required: false },
   profilePicture: { type: String, required: true },
   handicapVisible: { type: Boolean, required: true },
   pictures: { type: Array, required: false },

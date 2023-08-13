@@ -20,6 +20,7 @@ const registerUser = asyncHandler(async (req, res) => {
     handicap,
     profilePicture,
     handicapVisible,
+    pictures,
   } = req.body;
   const user = await User.create({
     email,
@@ -32,6 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
     handicap,
     profilePicture,
     handicapVisible,
+    pictures,
   });
   if (user) {
     res.status(201).json({
@@ -89,12 +91,13 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 // @route PUT /api/users/images
 // @access Private
 const updateImages = asyncHandler(async (req, res) => {
-  const { id, imageUrl } = req.body;
+  const { id, imageUrl, index } = req.body;
 
   const user = await User.findById(id);
-
+  console.log("index", index);
   if (user) {
-    user.pictures?.push(imageUrl);
+    user.pictures![index] = imageUrl;
+    console.log("user", user.pictures);
     const updatedUser = await user.save();
     res.status(200).json(updatedUser);
   } else {
@@ -131,6 +134,24 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
 
   if (user) {
     user.profilePicture = imageUrl;
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+// @desc Update user handicap
+// @route PUT /api/users/handicap
+// @access Private
+const updateHandicapVisible = asyncHandler(async (req, res) => {
+  const { id, handicapVisible } = req.body;
+
+  const user = await User.findById(id);
+
+  if (user) {
+    user.handicapVisible = handicapVisible;
     const updatedUser = await user.save();
     res.status(200).json(updatedUser);
   } else {
@@ -177,4 +198,5 @@ export {
   updateImages,
   updateBio,
   updateProfilePicture,
+  updateHandicapVisible,
 };
