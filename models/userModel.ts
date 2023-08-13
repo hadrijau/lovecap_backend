@@ -2,20 +2,36 @@ import bcrypt from "bcryptjs";
 import { Schema, model, connect } from "mongoose";
 
 interface IUser {
-  name: string;
+  firstname: string;
   email: string;
   password: string;
-  genre?: string;
+  genre: string;
+  interestedBy: string;
+  dateOfBirth: Date;
+  ageOfInterest: number[];
+  handicap: string;
+  profilePicture: string;
+  handicapVisible: boolean;
+  pictures?: string[];
+  biography?: string;
 }
 
 const userSchema = new Schema<IUser>({
-  name: { type: String, required: true },
+  firstname: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
-  genre: String,
+  genre: { type: String, required: true },
+  interestedBy: { type: String, required: true },
+  dateOfBirth: { type: Date, required: true },
+  ageOfInterest: [0, 100],
+  handicap: { type: String, required: true },
+  profilePicture: { type: String, required: true },
+  handicapVisible: { type: Boolean, required: true },
+  pictures: { type: Array, required: false },
+  biography: { type: String, required: false },
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
