@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken";
 import { Request, Response, NextFunction } from "express";
+import { sendEmail } from "../utils/sendEmail";
 
 // @desc Register User
 // @route POST /api/users/register
@@ -68,6 +69,7 @@ const emailExists = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({ email: req.body.email });
   const secret = process.env.JWT_SECRET!;
+  console.log("user", user);
   if (!user) {
     res.status(400).send("The user not found");
     throw new Error("User not found");
@@ -84,6 +86,33 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).send({ user: user.email, token: token });
   } else {
     res.status(400).send("password is wrong!");
+  }
+});
+
+// @desc Register User
+// @route POST /api/users
+// @access Public
+const getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({
+    _id: { $ne: req.params.id },
+  });
+  if (!users) {
+    res.status(500).json({ message: "The users were not found" });
+  } else {
+    res.status(200).send(users);
+  }
+});
+
+// @desc Send an email to admin to verify identity
+// @route POST /api/users/email
+// @access Public
+const sendEmailToAdmin = asyncHandler(async (req, res) => {
+  const { htmlOutput, subject } = req.body;
+  try {
+    sendEmail(subject, htmlOutput);
+    res.status(200).json({ status: "OK" });
+  } catch (err) {
+    res.status(200).json({ status: "Error" });
   }
 });
 
@@ -199,4 +228,6 @@ export {
   updateBio,
   updateProfilePicture,
   updateHandicapVisible,
+  getUsers,
+  sendEmailToAdmin,
 };
