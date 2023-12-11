@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import userRouter from "./routes/userRoutes";
 import matchRouter from "./routes/matchRoutes";
+import messageRouter from "./routes/messageRoutes";
+
 const app = express();
 dotenv.config();
 connectDB();
@@ -13,6 +15,7 @@ app.use(express.json());
 
 app.use("/api/users", userRouter);
 app.use("/api/match", matchRouter);
+app.use("/api/message", messageRouter);
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () =>

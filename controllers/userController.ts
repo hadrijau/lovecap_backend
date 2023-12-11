@@ -22,6 +22,7 @@ const registerUser = asyncHandler(async (req, res) => {
     profilePicture,
     handicapVisible,
     pictures,
+    compatibility,
   } = req.body;
   const user = await User.create({
     email,
@@ -35,6 +36,7 @@ const registerUser = asyncHandler(async (req, res) => {
     profilePicture,
     handicapVisible,
     pictures,
+    compatibility,
   });
   if (user) {
     res.status(201).json({
@@ -194,13 +196,14 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
 // @access Public
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-passwordHash");
-
+  console.log("user", user);
   if (!user) {
     res
       .status(500)
       .json({ message: "The user with the given ID was not found." });
+  } else {
+    res.status(200).send(user);
   }
-  res.status(200).send(user);
 });
 
 // @desc Delete user
