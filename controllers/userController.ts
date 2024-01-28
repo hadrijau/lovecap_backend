@@ -62,7 +62,6 @@ const emailExists = asyncHandler(async (req, res) => {
     res.status(400).send("Cet utilisateur existe déja");
     throw new Error("User already exists");
   } else {
-    console.log("GOES HERE");
     res.status(201).send("Cet email n'est pas utilisé");
   }
 });
@@ -73,7 +72,6 @@ const emailExists = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({ email: req.body.email });
   const secret = process.env.JWT_SECRET!;
-  console.log("user", user);
   if (!user) {
     res.status(400).send("The user not found");
     throw new Error("User not found");
@@ -94,12 +92,14 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc Register User
-// @route POST /api/users
+// @route GET /api/users
 // @access Public
 const getUsers = asyncHandler(async (req, res) => {
+  console.log("id", req.params.id);
   const users = await User.find({
     _id: { $ne: req.params.id },
   });
+  console.log("users", users);
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
   } else {
@@ -127,10 +127,8 @@ const updateImages = asyncHandler(async (req, res) => {
   const { id, imageUrl, index } = req.body;
 
   const user = await User.findById(id);
-  console.log("index", index);
   if (user) {
     user.pictures![index] = imageUrl;
-    console.log("user", user.pictures);
     const updatedUser = await user.save();
     res.status(200).json(updatedUser);
   } else {
@@ -198,7 +196,6 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
 // @access Public
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-passwordHash");
-  console.log("user", user);
   if (!user) {
     res
       .status(500)
@@ -213,7 +210,6 @@ const getUser = asyncHandler(async (req, res) => {
 // @access Private/admin
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
-  console.log("id", req.params.id);
   if (user) {
     await user.deleteOne();
     res.json({ message: "User removed" });
