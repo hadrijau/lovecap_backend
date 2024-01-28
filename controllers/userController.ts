@@ -23,6 +23,7 @@ const registerUser = asyncHandler(async (req, res) => {
     handicapVisible,
     pictures,
     compatibility,
+    expoPushToken,
   } = req.body;
   const user = await User.create({
     email,
@@ -37,6 +38,7 @@ const registerUser = asyncHandler(async (req, res) => {
     handicapVisible,
     pictures,
     compatibility,
+    expoPushToken,
   });
   if (user) {
     res.status(201).json({

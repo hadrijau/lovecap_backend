@@ -11,6 +11,7 @@ interface IUser {
   ageOfInterest: number[];
   handicap: string;
   profilePicture: string;
+  expoPushToken: string;
   handicapVisible: boolean;
   compatibility: (string | boolean)[];
   pictures?: string[];
@@ -29,6 +30,7 @@ const userSchema = new Schema<IUser>({
   profilePicture: { type: String, required: true },
   handicapVisible: { type: Boolean, required: true },
   compatibility: { type: Array, required: true },
+  expoPushToken: { type: String, required: true },
   pictures: { type: Array, required: false },
   biography: { type: String, required: false },
 });
