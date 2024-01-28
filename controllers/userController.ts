@@ -92,7 +92,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc Register User
-// @route GET /api/users
+// @route GET /api/users/except/:id
 // @access Public
 const getUsers = asyncHandler(async (req, res) => {
   console.log("id", req.params.id);
