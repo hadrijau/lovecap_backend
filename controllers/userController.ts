@@ -25,6 +25,7 @@ const registerUser = asyncHandler(async (req, res) => {
     compatibility,
     expoPushToken,
   } = req.body;
+
   const user = await User.create({
     email,
     password,
@@ -39,6 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
     pictures,
     compatibility,
     expoPushToken,
+    notifications: [],
   });
   if (user) {
     res.status(201).json({
@@ -219,6 +221,68 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteUserNotifications = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (user) {
+    res.status(200).send(user.notifications);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+// @desc Add a notification for a specific user
+// @route POST /api/users/:userId/notifications
+// @access Private
+const addNotification = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { title, text, type } = req.body;
+
+  const user = await User.findById(userId);
+
+  if (user) {
+    const newNotification = {
+      title,
+      text,
+      type,
+      unread: true, // Assuming a new notification is always unread
+    };
+
+    user.notifications.push(newNotification);
+    const updatedUser = await user.save();
+    res.status(201).json(updatedUser);
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
+
+// @desc Delete a notification for a specific user
+// @route DELETE /api/users/:userId/notifications/:notificationTitle
+// @access Private
+const deleteNotification = asyncHandler(async (req, res) => {
+  const { userId, notificationTitle } = req.params;
+
+  const user = await User.findById(userId);
+
+  if (user) {
+    const notificationIndex = user.notifications.findIndex(
+      (notification) => notification.title === notificationTitle
+    );
+
+    if (notificationIndex !== -1) {
+      user.notifications.splice(notificationIndex, 1);
+
+      const updatedUser = await user.save();
+
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(404).json({ message: "Notification not found" });
+    }
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
+
 export {
   registerUser,
   emailExists,
@@ -231,4 +295,6 @@ export {
   updateHandicapVisible,
   getUsers,
   sendEmailToAdmin,
+  addNotification,
+  deleteNotification,
 };

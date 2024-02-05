@@ -26,7 +26,7 @@ const getMessages = async (req: Request, res: Response) => {
 // @route POST /api/message
 // @access Public
 const createThread = asyncHandler(async (req, res) => {
-  const { members, latestMessage, unread, dateSent, pushTokens } = req.body;
+  const { members, latestMessage, unread, dateSent } = req.body;
 
   const message = await Message.create({
     members,
@@ -34,7 +34,6 @@ const createThread = asyncHandler(async (req, res) => {
     unread,
     dateSent,
     messages: [],
-    pushTokens,
   });
 
   if (message) {
@@ -44,12 +43,32 @@ const createThread = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc Create a messages thread for users
+// @route PUT /api/message
+// @access Public
+const updateThread = asyncHandler(async (req, res) => {
+  const { latestMessage, latestSender, threadId } = req.body;
+
+  const thread = await Message.findById(threadId);
+
+  if (!thread) {
+    res.status(404).json({ message: "Thread not found" });
+    return;
+  }
+
+  thread.latestSender = latestSender;
+  thread.latestMessage = latestMessage;
+
+  await thread.save();
+
+  res.status(200).json({ thread });
+});
+
 // @desc Create a message in a thread
 // @route POST /api/message/thread
 // @access Public
 const createMessage = asyncHandler(async (req, res) => {
-  const { id, messageId, text, createdAt, userId, userName, image, unread } =
-    req.body;
+  const { id, messageId, text, createdAt, userId, userName, image } = req.body;
 
   const thread = await Message.findById(id);
 
@@ -71,33 +90,14 @@ const createMessage = asyncHandler(async (req, res) => {
     },
   };
 
-  thread.unread = unread;
-  thread.messages.push(message);
-  thread.latestMessage = text;
+  const receiverIndex = thread.members.findIndex((user) => user.id != userId);
 
-  const updatedThread = await thread.save();
-  res.status(200).json({ updatedThread });
-});
-
-// @desc Update read status of a thread
-// @route PUT /api/messages/thread/:id
-// @access Public
-const updateReadStatus = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { unreadSender, dateSent } = req.body;
-
-  const thread = await Message.findById(id);
-
-  if (!thread) {
-    res
-      .status(500)
-      .json({ message: "The thread with the given ID was not found." });
-    return;
+  if (receiverIndex !== -1) {
+    thread.members[receiverIndex].unread = true;
   }
 
-  thread.unread = false;
-  thread.unreadSender = unreadSender;
-  thread.dateSent = dateSent || thread.dateSent;
+  thread.messages.push(message);
+  thread.latestMessage = text;
 
   const updatedThread = await thread.save();
   res.status(200).json({ updatedThread });
@@ -148,5 +148,5 @@ export {
   createMessage,
   deleteThread,
   getInnerMessages,
-  updateReadStatus,
+  updateThread,
 };

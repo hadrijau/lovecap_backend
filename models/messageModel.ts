@@ -4,6 +4,8 @@ interface IUser {
   id: string;
   firstname: string;
   profilePicture: string;
+  expoPushToken: string;
+  unread: boolean;
 }
 
 export interface IMessage {
@@ -20,8 +22,7 @@ export interface IMessage {
 interface IMessageDocument extends Document {
   members: IUser[];
   latestMessage: string;
-  unreadSender: string;
-  unread: boolean;
+  latestSender: string;
   pushTokens: string[];
   dateSent: Date;
   messages: IMessage[];
@@ -30,9 +31,7 @@ interface IMessageDocument extends Document {
 const MessageSchema = new Schema<IMessageDocument>(
   {
     latestMessage: String,
-    pushTokens: Array,
-    unreadSender: String,
-    unread: Boolean,
+    latestSender: String,
     members: Array,
     dateSent: Date,
     messages: [
