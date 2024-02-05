@@ -18,15 +18,10 @@ app.use("/api/users", userRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/message", messageRouter);
 
-app.use(
-  "/",
-  express.static(path.join(__dirname, "dist", "angular", "browser"))
-);
+app.use("/", express.static(path.join(__dirname, "angular", "browser")));
 
 app.use((req, res, next) => {
-  res.sendFile(
-    path.join(__dirname, "dist", "angular", "browser", "index.html")
-  );
+  res.sendFile(path.join(__dirname, "angular", "browser", "index.html"));
 });
 const PORT = process.env.PORT || 8000;
 
