@@ -11,6 +11,8 @@ import {
   updateHandicapVisible,
   getUsers,
   sendEmailToAdmin,
+  addLikeNotification,
+  resetLikeNotification,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -25,4 +27,8 @@ userRouter.route("/handicap").put(updateHandicapVisible);
 userRouter.route("/profilePicture").put(updateProfilePicture);
 userRouter.route("/email").post(sendEmailToAdmin);
 userRouter.route("/:id").get(getUser).delete(deleteUser);
+userRouter
+  .route("/likeNotification")
+  .post(addLikeNotification)
+  .put(resetLikeNotification);
 export default userRouter;

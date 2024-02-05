@@ -41,6 +41,8 @@ const registerUser = asyncHandler(async (req, res) => {
     compatibility,
     expoPushToken,
     notifications: [],
+    numberOfLikeNotifications: 0,
+    numberOfMessageNotifications: 0,
   });
   if (user) {
     res.status(201).json({
@@ -97,11 +99,9 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 // @route GET /api/users/except/:id
 // @access Public
 const getUsers = asyncHandler(async (req, res) => {
-  console.log("id", req.params.id);
   const users = await User.find({
     _id: { $ne: req.params.id },
   });
-  console.log("users", users);
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
   } else {
@@ -198,6 +198,7 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
 // @access Public
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-passwordHash");
+  console.log("user", user);
   if (!user) {
     res
       .status(500)
@@ -221,34 +222,15 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-const deleteUserNotifications = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (user) {
-    res.status(200).send(user.notifications);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
 // @desc Add a notification for a specific user
-// @route POST /api/users/:userId/notifications
+// @route POST /api/users/likeNotification
 // @access Private
-const addNotification = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  const { title, text, type } = req.body;
+const addLikeNotification = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
 
   const user = await User.findById(userId);
-
   if (user) {
-    const newNotification = {
-      title,
-      text,
-      type,
-      unread: true, // Assuming a new notification is always unread
-    };
-
-    user.notifications.push(newNotification);
+    user.numberOfLikeNotifications += 1;
     const updatedUser = await user.save();
     res.status(201).json(updatedUser);
   } else {
@@ -256,28 +238,18 @@ const addNotification = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Delete a notification for a specific user
-// @route DELETE /api/users/:userId/notifications/:notificationTitle
+// @desc Reset number of like notifications to 0
+// @route PUT /api/users/likeNotification
 // @access Private
-const deleteNotification = asyncHandler(async (req, res) => {
-  const { userId, notificationTitle } = req.params;
+const resetLikeNotification = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
 
   const user = await User.findById(userId);
 
   if (user) {
-    const notificationIndex = user.notifications.findIndex(
-      (notification) => notification.title === notificationTitle
-    );
-
-    if (notificationIndex !== -1) {
-      user.notifications.splice(notificationIndex, 1);
-
-      const updatedUser = await user.save();
-
-      res.status(200).json(updatedUser);
-    } else {
-      res.status(404).json({ message: "Notification not found" });
-    }
+    user.numberOfLikeNotifications = 0;
+    const updatedUser = await user.save();
+    res.status(201).json(updatedUser);
   } else {
     res.status(404).json({ message: "User not found" });
   }
@@ -295,6 +267,6 @@ export {
   updateHandicapVisible,
   getUsers,
   sendEmailToAdmin,
-  addNotification,
-  deleteNotification,
+  resetLikeNotification,
+  addLikeNotification,
 };

@@ -8,7 +8,6 @@ import { Request, Response } from "express";
 const getMessages = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    console.log("id", id);
     const messages = await Message.find({
       members: {
         $elemMatch: { id: id },
@@ -16,6 +15,29 @@ const getMessages = async (req: Request, res: Response) => {
     });
 
     res.status(200).json(messages);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// @desc Get number of unread messages for a user
+// @route GET /api/message/:id/unread
+// @access Public
+const getNumberOfUnreadMessages = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const messages = await Message.find({
+      members: {
+        $elemMatch: { id: id },
+      },
+    });
+
+    const unreadMessages = messages.filter(
+      (message) =>
+        message.latestSender != id && message.latestSender != "No one"
+    );
+    res.status(200).json(unreadMessages.length);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -149,4 +171,5 @@ export {
   deleteThread,
   getInnerMessages,
   updateThread,
+  getNumberOfUnreadMessages,
 };

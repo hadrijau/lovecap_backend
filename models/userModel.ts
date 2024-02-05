@@ -1,12 +1,5 @@
 import bcrypt from "bcryptjs";
 import { Schema, model, connect } from "mongoose";
-
-interface INotifications {
-  title: string;
-  text: string;
-  type: string;
-  unread: boolean;
-}
 interface IUser {
   firstname: string;
   email: string;
@@ -20,7 +13,7 @@ interface IUser {
   expoPushToken: string;
   handicapVisible: boolean;
   compatibility: (string | boolean)[];
-  notifications: INotifications[];
+  numberOfLikeNotifications: number;
   pictures?: string[];
   biography?: string;
 }
@@ -38,14 +31,7 @@ const userSchema = new Schema<IUser>({
   handicapVisible: { type: Boolean, required: true },
   compatibility: { type: Array, required: true },
   expoPushToken: { type: String, required: true },
-  notifications: [
-    {
-      title: { type: String, required: true },
-      text: { type: String, required: true },
-      type: { type: String, required: true },
-      unread: { type: Boolean, required: true },
-    },
-  ],
+  numberOfLikeNotifications: { type: Number, required: true },
   pictures: { type: Array, required: false },
   biography: { type: String, required: false },
 });

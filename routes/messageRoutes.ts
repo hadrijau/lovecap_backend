@@ -5,6 +5,7 @@ import {
   deleteThread,
   getInnerMessages,
   getMessages,
+  getNumberOfUnreadMessages,
   updateThread,
 } from "../controllers/messageController";
 
@@ -15,5 +16,5 @@ messageRouter.route("/:id").get(getMessages).delete(deleteThread);
 messageRouter.route("/thread").post(createMessage);
 messageRouter.route("/thread/:id").get(getInnerMessages);
 messageRouter.route("/thread/:threadId/toggleUnread/:userId");
-
+messageRouter.route("/:id/unread").get(getNumberOfUnreadMessages);
 export default messageRouter;

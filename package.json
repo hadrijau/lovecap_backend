@@ -7,8 +7,7 @@
     "start": "node dist/server.js",
     "postinstall": "tsc",
     "server": "nodemon server.ts",
-    "test": "jest",
-    "build": "npx tsc"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
