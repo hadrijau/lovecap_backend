@@ -13,6 +13,7 @@ import {
   sendEmailToAdmin,
   addLikeNotification,
   resetLikeNotification,
+  boostUser,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -26,9 +27,11 @@ userRouter.route("/biography").put(updateBio);
 userRouter.route("/handicap").put(updateHandicapVisible);
 userRouter.route("/profilePicture").put(updateProfilePicture);
 userRouter.route("/email").post(sendEmailToAdmin);
+userRouter.route("/boost").put(boostUser);
 userRouter.route("/:id").get(getUser).delete(deleteUser);
 userRouter
   .route("/likeNotification")
   .post(addLikeNotification)
   .put(resetLikeNotification);
+
 export default userRouter;

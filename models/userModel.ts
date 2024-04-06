@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Schema, model, connect } from "mongoose";
-interface IUser {
+export interface IUser {
   firstname: string;
   email: string;
   password: string;
@@ -14,6 +14,7 @@ interface IUser {
   handicapVisible: boolean;
   compatibility: (string | boolean)[];
   numberOfLikeNotifications: number;
+  boost?: boolean;
   pictures?: string[];
   biography?: string;
 }
@@ -32,6 +33,7 @@ const userSchema = new Schema<IUser>({
   compatibility: { type: Array, required: true },
   expoPushToken: { type: String, required: true },
   numberOfLikeNotifications: { type: Number, required: true },
+  boost: { type: Boolean, required: false },
   pictures: { type: Array, required: false },
   biography: { type: String, required: false },
 });

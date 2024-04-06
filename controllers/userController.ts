@@ -198,7 +198,6 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
 // @access Public
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-passwordHash");
-  console.log("user", user);
   if (!user) {
     res
       .status(500)
@@ -255,6 +254,22 @@ const resetLikeNotification = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc Boost user
+// @route PUT /api/users/boost
+// @access Private
+const boostUser = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+  const user = await User.findById(userId);
+
+  if (user) {
+    user.boost = true;
+    const updatedUser = await user.save();
+    res.status(201).json(updatedUser);
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
+
 export {
   registerUser,
   emailExists,
@@ -269,4 +284,5 @@ export {
   sendEmailToAdmin,
   resetLikeNotification,
   addLikeNotification,
+  boostUser,
 };

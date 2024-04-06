@@ -24,7 +24,7 @@ interface IMessageDocument extends Document {
   latestMessage: string;
   latestSender: string;
   pushTokens: string[];
-  dateSent: Date;
+  updatedAt: Date;
   messages: IMessage[];
 }
 
@@ -33,7 +33,7 @@ const MessageSchema = new Schema<IMessageDocument>(
     latestMessage: String,
     latestSender: String,
     members: Array,
-    dateSent: Date,
+    updatedAt: Date,
     messages: [
       {
         id: String, // message_id

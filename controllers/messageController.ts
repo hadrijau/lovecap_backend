@@ -48,13 +48,13 @@ const getNumberOfUnreadMessages = async (req: Request, res: Response) => {
 // @route POST /api/message
 // @access Public
 const createThread = asyncHandler(async (req, res) => {
-  const { members, latestMessage, unread, dateSent } = req.body;
+  const { members, latestMessage, unread, updatedAt } = req.body;
 
   const message = await Message.create({
     members,
     latestMessage,
     unread,
-    dateSent,
+    updatedAt,
     messages: [],
   });
 
@@ -69,7 +69,7 @@ const createThread = asyncHandler(async (req, res) => {
 // @route PUT /api/message
 // @access Public
 const updateThread = asyncHandler(async (req, res) => {
-  const { latestMessage, latestSender, threadId } = req.body;
+  const { latestMessage, latestSender, threadId, updatedAt } = req.body;
 
   const thread = await Message.findById(threadId);
 
@@ -80,6 +80,7 @@ const updateThread = asyncHandler(async (req, res) => {
 
   thread.latestSender = latestSender;
   thread.latestMessage = latestMessage;
+  thread.updatedAt = updatedAt;
 
   await thread.save();
 
