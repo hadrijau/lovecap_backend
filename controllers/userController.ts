@@ -43,7 +43,9 @@ const registerUser = asyncHandler(async (req, res) => {
     notifications: [],
     numberOfLikeNotifications: 0,
     numberOfMessageNotifications: 0,
+    maxNumberOfLike: 0,
   });
+
   if (user) {
     res.status(201).json({
       _id: user._id,
@@ -52,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
     });
   } else {
     res.status(400);
-    throw new Error("User not found");
+    throw new Error("Error creating user");
   }
 });
 
@@ -96,12 +98,28 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc Register User
-// @route GET /api/users/except/:id
+// @route GET /api/users/except/:id/:interestedBy
 // @access Public
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({
-    _id: { $ne: req.params.id },
-  });
+  const { id, interestedBy } = req.params;
+  let users;
+  if (interestedBy === "female") {
+    users = await User.find({
+      _id: { $ne: id },
+      genre: "female",
+    });
+  } else if (interestedBy === "male") {
+    users = await User.find({
+      _id: { $ne: id },
+      genre: "male",
+    });
+  } else {
+    users = await User.find({
+      _id: { $ne: id },
+      genre: "autre",
+    });
+  }
+
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
   } else {
@@ -193,11 +211,68 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc Update user handicap
+// @route PUT /api/users/increaseLike
+// @access Private
+const updateMaxNumberOfLikes = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+  console.log("id", userId);
+  const user = await User.findById(userId);
+  console.log("user", user);
+  if (user) {
+    user.maxNumberOfLike += 1;
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+// @desc Update user handicap
+// @route PUT /api/users/updateDate
+// @access Private
+const updateDateWhereUserCanSwipeAgain = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+
+  const user = await User.findById(id);
+
+  const date = new Date();
+  const updatedDate = new Date(date.setDate(date.getDate() + 1));
+  if (user) {
+    user.dateWhenUserCanSwipeAgain = updatedDate;
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+// @desc Update user handicap
+// @route PUT /api/users/resetLike
+// @access Private
+const resetMaxNumberOfLikes = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+
+  const user = await User.findById(id);
+
+  if (user) {
+    user.maxNumberOfLike = 0;
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
 // @desc Get User
 // @route GET /api/users/:id
 // @access Public
 const getUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select("-passwordHash");
+  const { id } = req.params;
+  const user = await User.findById(id).select("-passwordHash");
   if (!user) {
     res
       .status(500)
@@ -285,4 +360,7 @@ export {
   resetLikeNotification,
   addLikeNotification,
   boostUser,
+  updateMaxNumberOfLikes,
+  resetMaxNumberOfLikes,
+  updateDateWhereUserCanSwipeAgain,
 };

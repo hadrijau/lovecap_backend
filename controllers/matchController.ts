@@ -7,7 +7,7 @@ import User, { IUser } from "../models/userModel";
 // @access Public
 const getMatches = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const matches = await Match.find({ matcher: id });
+  const matches = await Match.find({ userWhoReceivesTheLike: id });
   if (matches.length === 0) {
     res.status(200).send(matches);
   } else {
@@ -24,7 +24,7 @@ const getMatches = asyncHandler(async (req, res) => {
 // @access Public
 const getMatchesWithUserInfos = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const matches = await Match.find({ matcher: id });
+  const matches = await Match.find({ userWhoReceivesTheLike: id });
   if (matches.length === 0) {
     res.status(200).send(matches);
   } else {
@@ -48,12 +48,13 @@ const getMatchesWithUserInfos = asyncHandler(async (req, res) => {
 // @route POST /api/match
 // @access Public
 const addMatch = asyncHandler(async (req, res) => {
-  const { userId, matchId } = req.body;
-  const matches = await Match.find({ matcher: userId });
+  // The userWhoGivesTheLike is the current user
+  const { userWhoGivesTheLike, userWhoReceivesTheLike } = req.body;
+  const matches = await Match.find({ userWhoReceivesTheLike });
   if (matches.length == 0) {
     const match = await Match.create({
-      matcher: userId,
-      matches: [matchId],
+      userWhoReceivesTheLike,
+      matches: [userWhoGivesTheLike],
     });
     if (match) {
       res.status(201);
@@ -64,7 +65,7 @@ const addMatch = asyncHandler(async (req, res) => {
   } else {
     const match = matches[0];
     const listOfMatches = match.matches;
-    listOfMatches.push(matchId);
+    listOfMatches.push(userWhoGivesTheLike);
     const updatedMatch = await match.save();
     res.status(200).json(updatedMatch);
   }
@@ -75,7 +76,7 @@ const addMatch = asyncHandler(async (req, res) => {
 // @access Public
 const deleteMatch = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const matches = await Match.find({ matcher: id });
+  const matches = await Match.find({ userWhoReceivesTheLike: id });
   if (matches.length == 0) {
     res.status(400);
     throw new Error("You have no match you can't delete a match");

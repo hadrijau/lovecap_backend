@@ -14,6 +14,8 @@ export interface IUser {
   handicapVisible: boolean;
   compatibility: (string | boolean)[];
   numberOfLikeNotifications: number;
+  maxNumberOfLike: number;
+  dateWhenUserCanSwipeAgain?: Date;
   boost?: boolean;
   pictures?: string[];
   biography?: string;
@@ -27,6 +29,7 @@ const userSchema = new Schema<IUser>({
   interestedBy: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
   ageOfInterest: [0, 100],
+  dateWhenUserCanSwipeAgain: { type: Date, required: false },
   handicap: { type: String, required: false },
   profilePicture: { type: String, required: true },
   handicapVisible: { type: Boolean, required: true },
@@ -36,6 +39,7 @@ const userSchema = new Schema<IUser>({
   boost: { type: Boolean, required: false },
   pictures: { type: Array, required: false },
   biography: { type: String, required: false },
+  maxNumberOfLike: { type: Number, required: true },
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword: string) {

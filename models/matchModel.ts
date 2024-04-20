@@ -1,12 +1,12 @@
 import { Schema, model } from "mongoose";
 
 interface IMatch {
-  matcher: string;
+  userWhoReceivesTheLike: string;
   matches: string[];
 }
 
 const matchSchema = new Schema<IMatch>({
-  matcher: { type: String, required: true },
+  userWhoReceivesTheLike: { type: String, required: true },
   matches: { type: [String], required: true },
 });
 
