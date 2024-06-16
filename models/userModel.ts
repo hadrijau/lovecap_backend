@@ -19,6 +19,10 @@ export interface IUser {
   boost?: boolean;
   pictures?: string[];
   biography?: string;
+  notificationsEnabledNewMatch: boolean;
+  notificationsEnabledNewMessage: boolean;
+  notificationsEnabledSuperLike: boolean;
+  notificationsEnabledPromotions: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -28,13 +32,17 @@ const userSchema = new Schema<IUser>({
   genre: { type: String, required: true },
   interestedBy: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
-  ageOfInterest: [0, 100],
+  ageOfInterest: { type: Array, required: true },
   dateWhenUserCanSwipeAgain: { type: Date, required: false },
   handicap: { type: String, required: false },
   profilePicture: { type: String, required: true },
   handicapVisible: { type: Boolean, required: true },
   compatibility: { type: Array, required: true },
   expoPushToken: { type: String, required: true },
+  notificationsEnabledNewMatch: { type: Boolean, required: false },
+  notificationsEnabledNewMessage: { type: Boolean, required: false },
+  notificationsEnabledSuperLike: { type: Boolean, required: false },
+  notificationsEnabledPromotions: { type: Boolean, required: false },
   numberOfLikeNotifications: { type: Number, required: true },
   boost: { type: Boolean, required: false },
   pictures: { type: Array, required: false },

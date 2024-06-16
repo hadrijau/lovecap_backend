@@ -6,6 +6,7 @@ import userRouter from "./routes/userRoutes";
 import matchRouter from "./routes/matchRoutes";
 import messageRouter from "./routes/messageRoutes";
 import path from "path";
+import emailRouter from "./routes/emailRoutes";
 
 const app = express();
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/api/users", userRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/message", messageRouter);
+app.use("/api/email", emailRouter);
 
 app.use("/", express.static(path.join(__dirname, "angular", "browser")));
 

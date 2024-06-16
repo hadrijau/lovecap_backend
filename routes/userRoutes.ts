@@ -17,6 +17,9 @@ import {
   updateMaxNumberOfLikes,
   resetMaxNumberOfLikes,
   updateDateWhereUserCanSwipeAgain,
+  updatePersonalData,
+  updateNotificationsSettings,
+  updateSettings,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -34,6 +37,9 @@ userRouter.route("/boost").put(boostUser);
 userRouter.route("/increaseLike").put(updateMaxNumberOfLikes);
 userRouter.route("/resetLike").put(resetMaxNumberOfLikes);
 userRouter.route("/updateDate").put(updateDateWhereUserCanSwipeAgain);
+userRouter.route("/updatePersonalData").put(updatePersonalData);
+userRouter.route("/updateNotifications").put(updateNotificationsSettings);
+userRouter.route("/updateSettings").put(updateSettings);
 userRouter.route("/:id").get(getUser).delete(deleteUser);
 userRouter
   .route("/likeNotification")
