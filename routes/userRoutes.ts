@@ -27,7 +27,7 @@ const userRouter = express.Router();
 userRouter.route("/register").post(registerUser);
 userRouter.route("/emailExists").post(emailExists);
 userRouter.route("/login").post(loginUser);
-userRouter.route("/except/:id/:interestedBy").get(getUsers);
+userRouter.route("/except/:id/:interestedBy/:ageOfInterest").get(getUsers);
 userRouter.route("/images").put(updateImages);
 userRouter.route("/biography").put(updateBio);
 userRouter.route("/handicap").put(updateHandicapVisible);

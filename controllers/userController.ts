@@ -102,28 +102,41 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc Register User
-// @route GET /api/users/except/:id/:interestedBy
+// @route GET /api/users/except/:id/:interestedBy/:ageOfInterest
 // @access Public
 const getUsers = asyncHandler(async (req, res) => {
-  const { id, interestedBy } = req.params;
-  let users;
+  const { id, interestedBy, ageOfInterest } = req.params;
+
+  console.log("age", ageOfInterest);
+  // Parse the ageOfInterest parameter, assuming it is a string in the format 'min-max'
+  const [minAge, maxAge] = ageOfInterest.split("-").map(Number);
+
+  // Calculate the date range for the age filter
+  const currentDate = new Date();
+  const minDateOfBirth = new Date(
+    currentDate.setFullYear(currentDate.getFullYear() - maxAge)
+  );
+  currentDate.setFullYear(currentDate.getFullYear() + maxAge); // reset currentDate to now
+  const maxDateOfBirth = new Date(
+    currentDate.setFullYear(currentDate.getFullYear() - minAge)
+  );
+
+  let genreFilter = {};
   if (interestedBy === "female") {
-    users = await User.find({
-      _id: { $ne: id },
-      genre: "female",
-    });
+    genreFilter = { genre: "female" };
   } else if (interestedBy === "male") {
-    users = await User.find({
-      _id: { $ne: id },
-      genre: "male",
-    });
+    genreFilter = { genre: "male" };
   } else {
-    users = await User.find({
-      _id: { $ne: id },
-      genre: "autre",
-    });
+    genreFilter = { genre: "autre" };
   }
 
+  const users = await User.find({
+    _id: { $ne: id },
+    ...genreFilter,
+    dateOfBirth: { $gte: minDateOfBirth, $lte: maxDateOfBirth },
+  });
+
+  console.log("users", users);
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
   } else {
