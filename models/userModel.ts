@@ -32,7 +32,7 @@ const userSchema = new Schema<IUser>({
   genre: { type: String, required: true },
   interestedBy: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
-  ageOfInterest: { type: Array, required: true },
+  ageOfInterest: { type: [Number], required: true },
   dateWhenUserCanSwipeAgain: { type: Date, required: false },
   handicap: { type: String, required: false },
   profilePicture: { type: String, required: true },
