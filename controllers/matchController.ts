@@ -34,9 +34,9 @@ const getMatchesWithUserInfos = asyncHandler(async (req, res) => {
     }
     let users: IUser[] = [];
     for (let match of listOfMatches) {
-      const user = await User.findById(match);
-
+      const user = await User.findById(match.userWhoGivesTheLike);
       if (user) {
+        user.receivedSuperLike = match.superLike;
         users.push(user);
       }
     }
@@ -49,12 +49,17 @@ const getMatchesWithUserInfos = asyncHandler(async (req, res) => {
 // @access Public
 const addMatch = asyncHandler(async (req, res) => {
   // The userWhoGivesTheLike is the current user
-  const { userWhoGivesTheLike, userWhoReceivesTheLike } = req.body;
+  const { userWhoGivesTheLike, userWhoReceivesTheLike, superLike } = req.body;
   const matches = await Match.find({ userWhoReceivesTheLike });
   if (matches.length == 0) {
     const match = await Match.create({
       userWhoReceivesTheLike,
-      matches: [userWhoGivesTheLike],
+      matches: [
+        {
+          userWhoGivesTheLike: userWhoGivesTheLike,
+          superLike: superLike,
+        },
+      ],
     });
     if (match) {
       res.status(201);
@@ -65,7 +70,10 @@ const addMatch = asyncHandler(async (req, res) => {
   } else {
     const match = matches[0];
     const listOfMatches = match.matches;
-    listOfMatches.push(userWhoGivesTheLike);
+    listOfMatches.push({
+      userWhoGivesTheLike: userWhoGivesTheLike,
+      superLike: superLike,
+    });
     const updatedMatch = await match.save();
     res.status(200).json(updatedMatch);
   }
@@ -101,7 +109,9 @@ const deleteMatch = asyncHandler(async (req, res) => {
   } else {
     const match = matches[0];
     let listOfMatches = match.matches;
-    listOfMatches = listOfMatches.filter((id) => id != matchId);
+    listOfMatches = listOfMatches.filter(
+      (match) => match.userWhoGivesTheLike != matchId
+    );
     match.matches = listOfMatches;
     const updatedMatch = await match.save();
     res.status(200).json(updatedMatch);

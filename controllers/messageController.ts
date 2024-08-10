@@ -14,9 +14,10 @@ const getMessages = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("HERRRE");
     res.status(200).json(messages);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching messages", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -37,6 +38,7 @@ const getNumberOfUnreadMessages = async (req: Request, res: Response) => {
       (message) =>
         message.latestSender != id && message.latestSender != "No one"
     );
+    console.log("messae", messages);
     res.status(200).json(unreadMessages.length);
   } catch (error) {
     console.error(error);
