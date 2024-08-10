@@ -23,6 +23,7 @@ export interface IUser {
   notificationsEnabledNewMessage: boolean;
   notificationsEnabledSuperLike: boolean;
   notificationsEnabledPromotions: boolean;
+  receivedSuperLike: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -43,6 +44,7 @@ const userSchema = new Schema<IUser>({
   notificationsEnabledNewMessage: { type: Boolean, required: false },
   notificationsEnabledSuperLike: { type: Boolean, required: false },
   notificationsEnabledPromotions: { type: Boolean, required: false },
+  receivedSuperLike: { type: Boolean, required: false },
   numberOfLikeNotifications: { type: Number, required: true },
   boost: { type: Boolean, required: false },
   pictures: { type: Array, required: false },

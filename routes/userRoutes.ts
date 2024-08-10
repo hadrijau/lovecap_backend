@@ -20,6 +20,8 @@ import {
   updatePersonalData,
   updateNotificationsSettings,
   updateSettings,
+  addSuperLike,
+  deleteSuperLike,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -40,6 +42,8 @@ userRouter.route("/updateDate").put(updateDateWhereUserCanSwipeAgain);
 userRouter.route("/updatePersonalData").put(updatePersonalData);
 userRouter.route("/updateNotifications").put(updateNotificationsSettings);
 userRouter.route("/updateSettings").put(updateSettings);
+userRouter.route("/superLike").put(addSuperLike);
+userRouter.route("/deleteSuperLike").put(deleteSuperLike);
 userRouter.route("/:id").get(getUser).delete(deleteUser);
 userRouter
   .route("/likeNotification")

@@ -72,9 +72,9 @@ const addMatch = asyncHandler(async (req, res) => {
 });
 
 // @desc Rewind Match
-// @route DELETE /api/match
+// @route DELETE /api/match/:id
 // @access Public
-const deleteMatch = asyncHandler(async (req, res) => {
+const deleteLastMatch = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const matches = await Match.find({ userWhoReceivesTheLike: id });
   if (matches.length == 0) {
@@ -89,4 +89,29 @@ const deleteMatch = asyncHandler(async (req, res) => {
   }
 });
 
-export { getMatches, addMatch, deleteMatch, getMatchesWithUserInfos };
+// @desc Rewind Match
+// @route DELETE /api/match/:id/:matchId
+// @access Public
+const deleteMatch = asyncHandler(async (req, res) => {
+  const { id, matchId } = req.params;
+  const matches = await Match.find({ userWhoReceivesTheLike: id });
+  if (matches.length == 0) {
+    res.status(400);
+    throw new Error("You have no match you can't delete a match");
+  } else {
+    const match = matches[0];
+    let listOfMatches = match.matches;
+    listOfMatches = listOfMatches.filter((id) => id != matchId);
+    match.matches = listOfMatches;
+    const updatedMatch = await match.save();
+    res.status(200).json(updatedMatch);
+  }
+});
+
+export {
+  getMatches,
+  addMatch,
+  deleteLastMatch,
+  deleteMatch,
+  getMatchesWithUserInfos,
+};

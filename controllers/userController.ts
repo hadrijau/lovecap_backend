@@ -107,7 +107,6 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 const getUsers = asyncHandler(async (req, res) => {
   const { id, interestedBy, ageOfInterest } = req.params;
 
-  console.log("age", ageOfInterest);
   // Parse the ageOfInterest parameter, assuming it is a string in the format 'min-max'
   const [minAge, maxAge] = ageOfInterest.split("-").map(Number);
 
@@ -136,7 +135,6 @@ const getUsers = asyncHandler(async (req, res) => {
     dateOfBirth: { $gte: minDateOfBirth, $lte: maxDateOfBirth },
   });
 
-  console.log("users", users);
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
   } else {
@@ -233,9 +231,7 @@ const updateHandicapVisible = asyncHandler(async (req, res) => {
 // @access Private
 const updateMaxNumberOfLikes = asyncHandler(async (req, res) => {
   const { userId } = req.body;
-  console.log("id", userId);
   const user = await User.findById(userId);
-  console.log("user", user);
   if (user) {
     user.maxNumberOfLike += 1;
     const updatedUser = await user.save();
@@ -414,6 +410,41 @@ const resetLikeNotification = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc Add a super like to a user to boost him in the list of the likes
+// @route PUT /api/users/superLike
+// @access Private
+const addSuperLike = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  const user = await User.findById(userId);
+
+  console.log("user", user);
+  if (user) {
+    user.receivedSuperLike = true;
+    const updatedUser = await user.save();
+    res.status(201).json(updatedUser);
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
+
+// @desc Remove a super like to a user to remove him in the list of the likes
+// @route PUT /api/users/deleteSuperLike
+// @access Private
+const deleteSuperLike = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  const user = await User.findById(userId);
+
+  if (user) {
+    user.receivedSuperLike = false;
+    const updatedUser = await user.save();
+    res.status(201).json(updatedUser);
+  } else {
+    res.status(404).json({ message: "User not found" });
+  }
+});
+
 // @desc Boost user
 // @route PUT /api/users/boost
 // @access Private
@@ -451,4 +482,6 @@ export {
   updatePersonalData,
   updateNotificationsSettings,
   updateSettings,
+  addSuperLike,
+  deleteSuperLike,
 };
