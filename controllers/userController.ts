@@ -9,6 +9,7 @@ import { Request, Response } from "express";
 // @route POST /api/users
 // @access Public
 const createUser = asyncHandler(async (req, res) => {
+  console.log("BPDY", req.body);
   const {
     firstname,
     email,
@@ -37,7 +38,7 @@ const createUser = asyncHandler(async (req, res) => {
     numberOfMessageNotifications,
   } = req.body;
 
-  console.log("compatibility");
+  console.log("compatibility", compatibility);
   const user = await User.create({
     email,
     password,
