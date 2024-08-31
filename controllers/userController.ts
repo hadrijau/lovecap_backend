@@ -3,8 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken";
-import { Request, Response, NextFunction } from "express";
-import { sendEmail } from "../utils/sendEmail";
+import { Request, Response } from "express";
 
 // @desc Register User
 // @route POST /api/users
@@ -38,6 +37,7 @@ const createUser = asyncHandler(async (req, res) => {
     numberOfMessageNotifications,
   } = req.body;
 
+  console.log("compatibility");
   const user = await User.create({
     email,
     password,
@@ -228,19 +228,6 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Send an email to admin to verify identity
-// @route POST /api/users/email
-// @access Public
-const sendEmailToAdmin = asyncHandler(async (req, res) => {
-  const { htmlOutput, subject } = req.body;
-  try {
-    sendEmail(subject, htmlOutput);
-    res.status(200).json({ status: "OK" });
-  } catch (err) {
-    res.status(200).json({ status: "Error" });
-  }
-});
-
 // @desc Get User
 // @route GET /api/users/:id
 // @access Public
@@ -294,6 +281,5 @@ export {
   getUser,
   deleteUser,
   getUsers,
-  sendEmailToAdmin,
   getUserByEmail,
 };
