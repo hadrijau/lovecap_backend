@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Schema, model, connect, Document } from "mongoose";
 
-// Define the IUser interface
 export interface IUser extends Document {
   firstname: string;
   email: string;
@@ -28,11 +27,17 @@ export interface IUser extends Document {
   receivedSuperLike: boolean;
   notifications: string[];
   numberOfMessageNotifications: number;
+  subscription: SubscriptionType | null;
 
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
-// Define the User Schema
+enum SubscriptionType {
+  Basique = "basique",
+  Or = "or",
+  Platine = "platine",
+}
+
 const userSchema = new Schema<IUser>({
   firstname: { type: String, required: true },
   email: { type: String, required: true },
@@ -59,6 +64,11 @@ const userSchema = new Schema<IUser>({
   maxNumberOfLike: { type: Number, required: true },
   notifications: { type: [String], required: true },
   numberOfMessageNotifications: { type: Number, required: true },
+  subscription: {
+    type: String,
+    enum: [...Object.values(SubscriptionType), null],
+    required: false,
+  },
 });
 
 // Define the matchPassword method

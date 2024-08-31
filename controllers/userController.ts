@@ -36,6 +36,7 @@ const createUser = asyncHandler(async (req, res) => {
     compatibility,
     notifications,
     numberOfMessageNotifications,
+    subscription,
   } = req.body;
 
   console.log("compatibility", compatibility);
@@ -65,6 +66,7 @@ const createUser = asyncHandler(async (req, res) => {
     notificationsEnabledSuperLike,
     notificationsEnabledPromotions,
     receivedSuperLike,
+    subscription,
   });
 
   if (user) {
@@ -141,7 +143,7 @@ const updateUser = asyncHandler(async (req, res) => {
   user.notifications = updates.notifications || user.notifications;
   user.numberOfMessageNotifications =
     updates.numberOfMessageNotifications || user.numberOfMessageNotifications;
-
+  user.subscription = updates.subssubscription || user.subscription;
   // Save the updated user
   const updatedUser = await user.save();
 
