@@ -11,7 +11,7 @@ const sendEmail = asyncHandler(async (req, res) => {
   let sendSmtpEmail = {
     to: [
       {
-        email: email, //TODO: Change this on production.
+        email: email,
       },
     ],
     templateId: 2,

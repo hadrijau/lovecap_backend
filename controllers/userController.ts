@@ -7,23 +7,35 @@ import { Request, Response, NextFunction } from "express";
 import { sendEmail } from "../utils/sendEmail";
 
 // @desc Register User
-// @route POST /api/users/register
+// @route POST /api/users
 // @access Public
-const registerUser = asyncHandler(async (req, res) => {
+const createUser = asyncHandler(async (req, res) => {
   const {
+    firstname,
     email,
     password,
-    firstname,
     genre,
     interestedBy,
     dateOfBirth,
     ageOfInterest,
     handicap,
-    profilePicture,
     handicapVisible,
-    pictures,
-    compatibility,
+    profilePicture,
     expoPushToken,
+    biography,
+    maxNumberOfLike,
+    dateWhenUserCanSwipeAgain,
+    numberOfLikeNotifications,
+    pictures,
+    boost,
+    notificationsEnabledNewMatch,
+    notificationsEnabledNewMessage,
+    notificationsEnabledSuperLike,
+    notificationsEnabledPromotions,
+    receivedSuperLike,
+    compatibility,
+    notifications,
+    numberOfMessageNotifications,
   } = req.body;
 
   const user = await User.create({
@@ -40,14 +52,18 @@ const registerUser = asyncHandler(async (req, res) => {
     pictures,
     compatibility,
     expoPushToken,
-    notifications: [],
-    numberOfLikeNotifications: 0,
-    numberOfMessageNotifications: 0,
-    maxNumberOfLike: 0,
-    notificationsEnabledNewMatch: true,
-    notificationsEnabledNewMessage: true,
-    notificationsEnabledSuperLike: true,
-    notificationsEnabledPromotions: true,
+    notifications,
+    biography,
+    boost,
+    numberOfLikeNotifications,
+    numberOfMessageNotifications,
+    maxNumberOfLike,
+    dateWhenUserCanSwipeAgain,
+    notificationsEnabledNewMatch,
+    notificationsEnabledNewMessage,
+    notificationsEnabledSuperLike,
+    notificationsEnabledPromotions,
+    receivedSuperLike,
   });
 
   if (user) {
@@ -60,6 +76,76 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Error creating user");
   }
+});
+
+// @desc Register User
+// @route PUT /api/users
+// @access Public
+const updateUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const updates = req.body;
+
+  // Find the user by ID
+  const user = await User.findById(userId);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  // Update the user fields
+  user.firstname = updates.firstname || user.firstname;
+  user.email = updates.email || user.email;
+  user.password = updates.password || user.password; // Make sure to hash the password if it's updated
+  user.genre = updates.genre || user.genre;
+  user.interestedBy = updates.interestedBy || user.interestedBy;
+  user.dateOfBirth = updates.dateOfBirth || user.dateOfBirth;
+  user.ageOfInterest = updates.ageOfInterest || user.ageOfInterest;
+  user.handicap = updates.handicap || user.handicap;
+  user.handicapVisible =
+    updates.handicapVisible !== undefined
+      ? updates.handicapVisible
+      : user.handicapVisible;
+  user.profilePicture = updates.profilePicture || user.profilePicture;
+  user.expoPushToken = updates.expoPushToken || user.expoPushToken;
+  user.biography = updates.biography || user.biography;
+  user.maxNumberOfLike = updates.maxNumberOfLike || user.maxNumberOfLike;
+  user.dateWhenUserCanSwipeAgain =
+    updates.dateWhenUserCanSwipeAgain || user.dateWhenUserCanSwipeAgain;
+  user.numberOfLikeNotifications =
+    updates.numberOfLikeNotifications || user.numberOfLikeNotifications;
+  user.pictures = updates.pictures || user.pictures;
+  user.boost = false;
+  user.notificationsEnabledNewMatch =
+    updates.notificationsEnabledNewMatch !== undefined
+      ? updates.notificationsEnabledNewMatch
+      : user.notificationsEnabledNewMatch;
+  user.notificationsEnabledNewMessage =
+    updates.notificationsEnabledNewMessage !== undefined
+      ? updates.notificationsEnabledNewMessage
+      : user.notificationsEnabledNewMessage;
+  user.notificationsEnabledSuperLike =
+    updates.notificationsEnabledSuperLike !== undefined
+      ? updates.notificationsEnabledSuperLike
+      : user.notificationsEnabledSuperLike;
+  user.notificationsEnabledPromotions =
+    updates.notificationsEnabledPromotions !== undefined
+      ? updates.notificationsEnabledPromotions
+      : user.notificationsEnabledPromotions;
+  user.receivedSuperLike =
+    updates.receivedSuperLike !== undefined
+      ? updates.receivedSuperLike
+      : user.receivedSuperLike;
+  user.compatibility = updates.compatibility || user.compatibility;
+  user.notifications = updates.notifications || user.notifications;
+  user.numberOfMessageNotifications =
+    updates.numberOfMessageNotifications || user.numberOfMessageNotifications;
+
+  // Save the updated user
+  const updatedUser = await user.save();
+
+  console.log("UDPATD", updatedUser);
+  res.status(200).json(updatedUser);
 });
 
 // @desc Register User
@@ -155,199 +241,6 @@ const sendEmailToAdmin = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Update user pictures
-// @route PUT /api/users/images
-// @access Private
-const updateImages = asyncHandler(async (req, res) => {
-  const { id, imageUrl, index } = req.body;
-
-  const user = await User.findById(id);
-  if (user) {
-    user.pictures![index] = imageUrl;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user biography
-// @route PUT /api/users/biography
-// @access Private
-const updateBio = asyncHandler(async (req, res) => {
-  const { id, biography } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.biography = biography;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user biography
-// @route PUT /api/users/profilePicture
-// @access Private
-const updateProfilePicture = asyncHandler(async (req, res) => {
-  const { id, imageUrl } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.profilePicture = imageUrl;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/handicap
-// @access Private
-const updateHandicapVisible = asyncHandler(async (req, res) => {
-  const { id, handicapVisible } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.handicapVisible = handicapVisible;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/increaseLike
-// @access Private
-const updateMaxNumberOfLikes = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-  const user = await User.findById(userId);
-  if (user) {
-    user.maxNumberOfLike += 1;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/updateDate
-// @access Private
-const updateDateWhereUserCanSwipeAgain = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-
-  const user = await User.findById(userId);
-
-  const date = new Date();
-  const updatedDate = new Date(date.setDate(date.getDate() + 1));
-  if (user) {
-    user.dateWhenUserCanSwipeAgain = updatedDate;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/updatePersonalData
-// @access Private
-const updatePersonalData = asyncHandler(async (req, res) => {
-  const { id, email, password, phone } = req.body;
-
-  const user = await User.findById(id);
-
-  const date = new Date();
-  const updatedDate = new Date(date.setDate(date.getDate() + 1));
-  if (user) {
-    user.email = email;
-    user.password = password;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/updateNotifications
-// @access Private
-const updateNotificationsSettings = asyncHandler(async (req, res) => {
-  const {
-    id,
-    notificationsEnabledNewMatch,
-    notificationsEnabledNewMessage,
-    notificationsEnabledSuperLike,
-    notificationsEnabledPromotions,
-  } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.notificationsEnabledNewMatch = notificationsEnabledNewMatch;
-    user.notificationsEnabledNewMessage = notificationsEnabledNewMessage;
-    user.notificationsEnabledSuperLike = notificationsEnabledSuperLike;
-    user.notificationsEnabledPromotions = notificationsEnabledPromotions;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/updateSettings
-// @access Private
-const updateSettings = asyncHandler(async (req, res) => {
-  const { id, genre, interestedBy, ageOfInterest } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.genre = genre;
-    user.interestedBy = interestedBy;
-    user.ageOfInterest = ageOfInterest;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
-// @desc Update user handicap
-// @route PUT /api/users/resetLike
-// @access Private
-const resetMaxNumberOfLikes = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-
-  const user = await User.findById(id);
-
-  if (user) {
-    user.maxNumberOfLike = 0;
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
-});
-
 // @desc Get User
 // @route GET /api/users/:id
 // @access Public
@@ -358,6 +251,22 @@ const getUser = asyncHandler(async (req, res) => {
     res
       .status(500)
       .json({ message: "The user with the given ID was not found." });
+  } else {
+    res.status(200).send(user);
+  }
+});
+
+// @desc Get User
+// @route GET /api/users/email/:email
+// @access Public
+const getUserByEmail = asyncHandler(async (req, res) => {
+  const { email } = req.params;
+  console.log("email", email);
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res
+      .status(500)
+      .json({ message: "The user with the given email was not found." });
   } else {
     res.status(200).send(user);
   }
@@ -377,111 +286,14 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Add a notification for a specific user
-// @route POST /api/users/likeNotification
-// @access Private
-const addLikeNotification = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-
-  const user = await User.findById(userId);
-  if (user) {
-    user.numberOfLikeNotifications += 1;
-    const updatedUser = await user.save();
-    res.status(201).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-});
-
-// @desc Reset number of like notifications to 0
-// @route PUT /api/users/likeNotification
-// @access Private
-const resetLikeNotification = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-
-  const user = await User.findById(userId);
-
-  if (user) {
-    user.numberOfLikeNotifications = 0;
-    const updatedUser = await user.save();
-    res.status(201).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-});
-
-// @desc Add a super like to a user to boost him in the list of the likes
-// @route PUT /api/users/superLike
-// @access Private
-const addSuperLike = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-
-  const user = await User.findById(userId);
-
-  console.log("user", user);
-  if (user) {
-    user.receivedSuperLike = true;
-    const updatedUser = await user.save();
-    res.status(201).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-});
-
-// @desc Remove a super like to a user to remove him in the list of the likes
-// @route PUT /api/users/deleteSuperLike
-// @access Private
-const deleteSuperLike = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-
-  const user = await User.findById(userId);
-
-  if (user) {
-    user.receivedSuperLike = false;
-    const updatedUser = await user.save();
-    res.status(201).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-});
-
-// @desc Boost user
-// @route PUT /api/users/boost
-// @access Private
-const boostUser = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-  const user = await User.findById(userId);
-
-  if (user) {
-    user.boost = true;
-    const updatedUser = await user.save();
-    res.status(201).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-});
-
 export {
-  registerUser,
+  createUser,
+  updateUser,
   emailExists,
   loginUser,
   getUser,
   deleteUser,
-  updateImages,
-  updateBio,
-  updateProfilePicture,
-  updateHandicapVisible,
   getUsers,
   sendEmailToAdmin,
-  resetLikeNotification,
-  addLikeNotification,
-  boostUser,
-  updateMaxNumberOfLikes,
-  resetMaxNumberOfLikes,
-  updateDateWhereUserCanSwipeAgain,
-  updatePersonalData,
-  updateNotificationsSettings,
-  updateSettings,
-  addSuperLike,
-  deleteSuperLike,
+  getUserByEmail,
 };
