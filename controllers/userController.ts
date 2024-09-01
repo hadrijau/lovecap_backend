@@ -9,7 +9,6 @@ import { Request, Response } from "express";
 // @route POST /api/users
 // @access Public
 const createUser = asyncHandler(async (req, res) => {
-  console.log("BPDY", req.body);
   const {
     firstname,
     email,
@@ -39,7 +38,6 @@ const createUser = asyncHandler(async (req, res) => {
     subscription,
   } = req.body;
 
-  console.log("compatibility", compatibility);
   const user = await User.create({
     email,
     password,
@@ -111,14 +109,17 @@ const updateUser = asyncHandler(async (req, res) => {
       : user.handicapVisible;
   user.profilePicture = updates.profilePicture || user.profilePicture;
   user.expoPushToken = updates.expoPushToken || user.expoPushToken;
-  user.biography = updates.biography || user.biography;
-  user.maxNumberOfLike = updates.maxNumberOfLike || user.maxNumberOfLike;
+  user.biography =
+    updates.biography != undefined ? updates.biography : user.biography;
+  user.maxNumberOfLike = updates.hasOwnProperty("maxNumberOfLike")
+    ? updates.maxNumberOfLike
+    : user.maxNumberOfLike;
   user.dateWhenUserCanSwipeAgain =
     updates.dateWhenUserCanSwipeAgain || user.dateWhenUserCanSwipeAgain;
   user.numberOfLikeNotifications =
     updates.numberOfLikeNotifications || user.numberOfLikeNotifications;
   user.pictures = updates.pictures || user.pictures;
-  user.boost = false;
+  user.boost = updates.boost != undefined ? updates.boost : user.boost;
   user.notificationsEnabledNewMatch =
     updates.notificationsEnabledNewMatch !== undefined
       ? updates.notificationsEnabledNewMatch
@@ -143,11 +144,10 @@ const updateUser = asyncHandler(async (req, res) => {
   user.notifications = updates.notifications || user.notifications;
   user.numberOfMessageNotifications =
     updates.numberOfMessageNotifications || user.numberOfMessageNotifications;
-  user.subscription = updates.subssubscription || user.subscription;
+  user.subscription = updates.subscription || user.subscription;
   // Save the updated user
   const updatedUser = await user.save();
 
-  console.log("UDPATD", updatedUser);
   res.status(200).json(updatedUser);
 });
 
@@ -251,7 +251,6 @@ const getUser = asyncHandler(async (req, res) => {
 // @access Public
 const getUserByEmail = asyncHandler(async (req, res) => {
   const { email } = req.params;
-  console.log("email", email);
   const user = await User.findOne({ email: email });
   if (!user) {
     res
