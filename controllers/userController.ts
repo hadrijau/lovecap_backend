@@ -253,12 +253,11 @@ const getUserByEmail = asyncHandler(async (req, res) => {
   const { email } = req.params;
   const user = await User.findOne({ email: email });
   if (!user) {
-    res
-      .status(500)
+    return res
+      .status(404)
       .json({ message: "The user with the given email was not found." });
-  } else {
-    res.status(200).send(user);
   }
+  res.status(200).send(user);
 });
 
 // @desc Delete user
