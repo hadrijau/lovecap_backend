@@ -79,8 +79,8 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Register User
-// @route PUT /api/users
+// @desc Update User
+// @route PUT /api/users/:id
 // @access Public
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;

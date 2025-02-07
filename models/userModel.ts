@@ -33,9 +33,9 @@ export interface IUser extends Document {
 }
 
 enum SubscriptionType {
-  Basique = "basique",
-  Or = "or",
-  Platine = "platine",
+  Basique = "basic",
+  Or = "gold",
+  Platine = "platinium",
 }
 
 const userSchema = new Schema<IUser>({
