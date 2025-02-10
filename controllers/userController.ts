@@ -36,6 +36,11 @@ const createUser = asyncHandler(async (req, res) => {
     notifications,
     numberOfMessageNotifications,
     subscription,
+    endOfBoost,
+    numberOfBoostRemaining,
+    addBoostDate,
+    numberOfSuperLikeRemaining,
+    addSuperLikeDate,
   } = req.body;
 
   const user = await User.create({
@@ -65,6 +70,11 @@ const createUser = asyncHandler(async (req, res) => {
     notificationsEnabledPromotions,
     receivedSuperLike,
     subscription,
+    endOfBoost,
+    numberOfBoostRemaining,
+    addBoostDate,
+    numberOfSuperLikeRemaining,
+    addSuperLikeDate,
   });
 
   if (user) {
@@ -145,42 +155,13 @@ const updateUser = asyncHandler(async (req, res) => {
   user.numberOfMessageNotifications =
     updates.numberOfMessageNotifications || user.numberOfMessageNotifications;
   user.subscription = updates.subscription || user.subscription;
-
-  // Save the updated user
-  const updatedUser = await user.save();
-
-  res.status(200).json(updatedUser);
-});
-
-// @desc Update User superlike
-// @route PUT /api/users/:id/superlike
-// @access Public
-const updateSuperLike = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  const { numberOfSuperLike } = req.body;
-  user.numberOfSuperLikeRemaining += numberOfSuperLike;
-
-  // Save the updated user
-  const updatedUser = await user.save();
-
-  res.status(200).json(updatedUser);
-});
-
-// @desc Update User boost
-// @route PUT /api/users/:id/boost
-// @access Public
-const updateBoost = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  const { numberOfBoost } = req.body;
-  user.numberOfBoostRemaining += numberOfBoost;
+  user.endOfBoost = updates.endOfBoost || user.endOfBoost;
+  user.numberOfBoostRemaining =
+    updates.numberOfBoostRemaining || user.numberOfBoostRemaining;
+  user.addBoostDate = updates.addBoostDate || user.addBoostDate;
+  user.numberOfSuperLikeRemaining =
+    updates.numberOfSuperLikeRemaining || user.numberOfSuperLikeRemaining;
+  user.addSuperLikeDate = updates.addSuperLikeDate || user.addSuperLikeDate;
 
   // Save the updated user
   const updatedUser = await user.save();
@@ -324,6 +305,4 @@ export {
   deleteUser,
   getUsers,
   getUserByEmail,
-  updateSuperLike,
-  updateBoost,
 };

@@ -8,8 +8,6 @@ import {
   getUsers,
   updateUser,
   getUserByEmail,
-  updateSuperLike,
-  updateBoost,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -20,6 +18,4 @@ userRouter.route("/login").post(loginUser);
 userRouter.route("/except/:id/:interestedBy/:ageOfInterest").get(getUsers);
 userRouter.route("/:id").get(getUser).delete(deleteUser).put(updateUser);
 userRouter.route("/email/:email").get(getUserByEmail);
-userRouter.route("/:id/superlike").put(updateSuperLike);
-userRouter.route("/:id/boost").put(updateBoost);
 export default userRouter;
