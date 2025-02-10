@@ -145,6 +145,43 @@ const updateUser = asyncHandler(async (req, res) => {
   user.numberOfMessageNotifications =
     updates.numberOfMessageNotifications || user.numberOfMessageNotifications;
   user.subscription = updates.subscription || user.subscription;
+
+  // Save the updated user
+  const updatedUser = await user.save();
+
+  res.status(200).json(updatedUser);
+});
+
+// @desc Update User superlike
+// @route PUT /api/users/:id/superlike
+// @access Public
+const updateSuperLike = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+  const { numberOfSuperLike } = req.body;
+  user.numberOfSuperLikeRemaining += numberOfSuperLike;
+
+  // Save the updated user
+  const updatedUser = await user.save();
+
+  res.status(200).json(updatedUser);
+});
+
+// @desc Update User boost
+// @route PUT /api/users/:id/boost
+// @access Public
+const updateBoost = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+  const { numberOfBoost } = req.body;
+  user.numberOfBoostRemaining += numberOfBoost;
+
   // Save the updated user
   const updatedUser = await user.save();
 
@@ -287,4 +324,6 @@ export {
   deleteUser,
   getUsers,
   getUserByEmail,
+  updateSuperLike,
+  updateBoost,
 };

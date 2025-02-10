@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Schema, model, connect, Document } from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
 export interface IUser extends Document {
   firstname: string;
@@ -18,6 +18,11 @@ export interface IUser extends Document {
   maxNumberOfLike: number;
   dateWhenUserCanSwipeAgain: Date;
   boost: boolean;
+  endOfBoost: Date;
+  numberOfBoostRemaining: number;
+  addBoostDate: Date;
+  numberOfSuperLikeRemaining: number;
+  addSuperLikeDate: Date;
   pictures: string[];
   biography: string;
   notificationsEnabledNewMatch: boolean;
@@ -59,6 +64,11 @@ const userSchema = new Schema<IUser>({
   receivedSuperLike: { type: Boolean, required: true },
   numberOfLikeNotifications: { type: Number, required: true },
   boost: { type: Boolean, required: true },
+  endOfBoost: { type: Date, required: false },
+  numberOfBoostRemaining: { type: Number, required: false },
+  addBoostDate: { type: Date, required: false },
+  numberOfSuperLikeRemaining: { type: Number, required: false },
+  addSuperLikeDate: { type: Date, required: false },
   pictures: { type: [String], required: true },
   biography: { type: String, required: false, default: "" },
   maxNumberOfLike: { type: Number, required: true },
