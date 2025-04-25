@@ -5,7 +5,6 @@ import cors from "cors";
 import userRouter from "../routes/userRoutes";
 import matchRouter from "../routes/matchRoutes";
 import messageRouter from "../routes/messageRoutes";
-import path from "path";
 import emailRouter from "../routes/emailRoutes";
 
 const app = express();
@@ -20,11 +19,10 @@ app.use("/api/match", matchRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/email", emailRouter);
 
-app.use("/", express.static(path.join(__dirname, "angular", "browser")));
-
-app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, "angular", "browser", "index.html"));
+app.get("/", (req, res) => {
+  res.send("Hello World");
 });
+
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () =>
