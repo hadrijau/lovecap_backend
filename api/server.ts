@@ -1,12 +1,12 @@
 import express from "express";
-import connectDB from "./config/db";
+import connectDB from "../config/db";
 import dotenv from "dotenv";
 import cors from "cors";
-import userRouter from "./routes/userRoutes";
-import matchRouter from "./routes/matchRoutes";
-import messageRouter from "./routes/messageRoutes";
+import userRouter from "../routes/userRoutes";
+import matchRouter from "../routes/matchRoutes";
+import messageRouter from "../routes/messageRoutes";
 import path from "path";
-import emailRouter from "./routes/emailRoutes";
+import emailRouter from "../routes/emailRoutes";
 
 const app = express();
 dotenv.config();

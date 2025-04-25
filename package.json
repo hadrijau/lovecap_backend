@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "start": "ts-node server.ts",
+    "start": "ts-node api/server.ts",
     "postinstall": "tsc",
-    "server": "nodemon server.ts",
+    "server": "nodemon api/server.ts",
     "test": "jest"
   },
   "repository": {
