@@ -172,15 +172,17 @@ const updateUser = asyncHandler(async (req, res) => {
 // @desc Register User
 // @route POST /api/users/emailExists
 // @access Public
-const emailExists = asyncHandler(async (req, res) => {
+const checkEmail = asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400).send("Cet utilisateur existe déja");
-    throw new Error("User already exists");
-  } else {
-    res.status(201).send("Cet email n'est pas utilisé");
+
+  if (!email) {
+    res.status(400).json({ message: "Email requis" });
+    return;
   }
+
+  const userExists = await User.findOne({ email });
+
+  res.status(200).json({ exists: !!userExists });
 });
 
 // @desc Register User
@@ -299,7 +301,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 export {
   createUser,
   updateUser,
-  emailExists,
+  checkEmail,
   loginUser,
   getUser,
   deleteUser,
