@@ -14,7 +14,6 @@ const getMessages = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("HERRRE");
     res.status(200).json(messages);
   } catch (error) {
     console.error("Error fetching messages", error);
@@ -38,7 +37,6 @@ const getNumberOfUnreadMessages = async (req: Request, res: Response) => {
       (message) =>
         message.latestSender != id && message.latestSender != "No one"
     );
-    console.log("messae", messages);
     res.status(200).json(unreadMessages.length);
   } catch (error) {
     console.error(error);
@@ -52,6 +50,23 @@ const getNumberOfUnreadMessages = async (req: Request, res: Response) => {
 const createThread = asyncHandler(async (req, res) => {
   const { members, latestMessage, unread, updatedAt } = req.body;
 
+  const memberIds = members.map((member: any) => member.id).sort();
+
+  const existingThread = await Message.findOne({
+    $and: [
+      { [`members.${memberIds.length - 1}`]: { $exists: true } },
+      { members: { $size: memberIds.length } },
+      ...memberIds.map((id: string) => ({
+        members: { $elemMatch: { id } },
+      })),
+    ],
+  });
+
+  if (existingThread) {
+    res.status(200).json({ message: existingThread });
+    return;
+  }
+
   const message = await Message.create({
     members,
     latestMessage,
@@ -62,8 +77,10 @@ const createThread = asyncHandler(async (req, res) => {
 
   if (message) {
     res.status(201).json({ message });
+    return;
   } else {
     res.status(400).json({ message: "Une erreur est survenue" });
+    return;
   }
 });
 

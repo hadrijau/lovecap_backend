@@ -104,6 +104,7 @@ const updateUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
+  console.log("updates", updates.subscription);
   // Update the user fields
   user.firstname = updates.firstname || user.firstname;
   user.email = updates.email || user.email;
