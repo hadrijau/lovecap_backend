@@ -217,15 +217,13 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 const getUsers = asyncHandler(async (req, res) => {
   const { id, interestedBy, ageOfInterest } = req.params;
 
-  // Parse the ageOfInterest parameter, assuming it is a string in the format 'min-max'
   const [minAge, maxAge] = ageOfInterest.split("-").map(Number);
 
-  // Calculate the date range for the age filter
   const currentDate = new Date();
   const minDateOfBirth = new Date(
     currentDate.setFullYear(currentDate.getFullYear() - maxAge)
   );
-  currentDate.setFullYear(currentDate.getFullYear() + maxAge); // reset currentDate to now
+  currentDate.setFullYear(currentDate.getFullYear() + maxAge);
   const maxDateOfBirth = new Date(
     currentDate.setFullYear(currentDate.getFullYear() - minAge)
   );
@@ -239,11 +237,16 @@ const getUsers = asyncHandler(async (req, res) => {
     genreFilter = { genre: "autre" };
   }
 
-  const users = await User.find({
-    _id: { $ne: id },
-    ...genreFilter,
-    dateOfBirth: { $gte: minDateOfBirth, $lte: maxDateOfBirth },
-  });
+  const users = await User.aggregate([
+    {
+      $match: {
+        _id: { $ne: id },
+        ...genreFilter,
+        dateOfBirth: { $gte: minDateOfBirth, $lte: maxDateOfBirth },
+      },
+    },
+    { $sample: { size: 50 } },
+  ]);
 
   if (!users) {
     res.status(500).json({ message: "The users were not found" });
