@@ -1,18 +1,28 @@
+// Charger les variables d'environnement AVANT tous les autres imports
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import connectDB from "./config/db";
-import dotenv from "dotenv";
 import cors from "cors";
 import userRouter from "./routes/userRoutes";
 import matchRouter from "./routes/matchRoutes";
 import messageRouter from "./routes/messageRoutes";
 import emailRouter from "./routes/emailRoutes";
+import { requestLogger } from "./middleware/logger";
+import { conditionalAuth } from "./middleware/conditionalAuth";
 
 const app = express();
-dotenv.config();
 connectDB();
 
 app.use(cors());
 app.use(express.json());
+
+// Middleware de logging pour toutes les routes (s'exécute avant)
+app.use(requestLogger);
+
+// Middleware d'authentification conditionnelle (appliqué à toutes les routes sauf les publiques)
+app.use(conditionalAuth);
 
 app.use("/api/users", userRouter);
 app.use("/api/match", matchRouter);

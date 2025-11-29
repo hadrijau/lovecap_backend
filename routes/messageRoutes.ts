@@ -11,6 +11,7 @@ import {
 
 const messageRouter = express.Router();
 
+// Toutes les routes message sont privées (authentification gérée par conditionalAuth dans app.ts)
 messageRouter.route("/").post(createThread).put(updateThread);
 messageRouter.route("/:id").get(getMessages).delete(deleteThread);
 messageRouter.route("/thread").post(createMessage);

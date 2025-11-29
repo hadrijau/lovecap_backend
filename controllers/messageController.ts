@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Message, { IMessage } from "../models/messageModel";
 import { Request, Response } from "express";
+import { encryptMessage, decryptMessage } from "../utils/encryption";
 
 // @desc Get messages for a user
 // @route GET /api/message/:id
@@ -14,7 +15,16 @@ const getMessages = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json(messages);
+    // Déchiffrer les messages
+    const decryptedMessages = messages.map((message) => {
+      const decrypted = message.toObject();
+      if (decrypted.latestMessage) {
+        decrypted.latestMessage = decryptMessage(decrypted.latestMessage);
+      }
+      return decrypted;
+    });
+
+    res.status(200).json(decryptedMessages);
   } catch (error) {
     console.error("Error fetching messages", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -63,20 +73,33 @@ const createThread = asyncHandler(async (req, res) => {
   });
 
   if (existingThread) {
-    res.status(200).json({ message: existingThread });
+    // Déchiffrer le latestMessage si existant
+    const decryptedThread = existingThread.toObject();
+    if (decryptedThread.latestMessage) {
+      decryptedThread.latestMessage = decryptMessage(decryptedThread.latestMessage);
+    }
+    res.status(200).json({ message: decryptedThread });
     return;
   }
 
+  // Chiffrer le latestMessage avant de sauvegarder
+  const encryptedLatestMessage = latestMessage ? encryptMessage(latestMessage) : latestMessage;
+
   const message = await Message.create({
     members,
-    latestMessage,
+    latestMessage: encryptedLatestMessage,
     unread,
     updatedAt,
     messages: [],
   });
 
   if (message) {
-    res.status(201).json({ message });
+    // Déchiffrer pour la réponse
+    const decryptedMessage = message.toObject();
+    if (decryptedMessage.latestMessage) {
+      decryptedMessage.latestMessage = decryptMessage(decryptedMessage.latestMessage);
+    }
+    res.status(201).json({ message: decryptedMessage });
     return;
   } else {
     res.status(400).json({ message: "Une erreur est survenue" });
@@ -98,12 +121,19 @@ const updateThread = asyncHandler(async (req, res) => {
   }
 
   thread.latestSender = latestSender;
-  thread.latestMessage = latestMessage;
+  // Chiffrer le latestMessage avant de sauvegarder
+  thread.latestMessage = latestMessage ? encryptMessage(latestMessage) : latestMessage;
   thread.updatedAt = updatedAt;
 
   await thread.save();
 
-  res.status(200).json({ thread });
+  // Déchiffrer pour la réponse
+  const decryptedThread = thread.toObject();
+  if (decryptedThread.latestMessage) {
+    decryptedThread.latestMessage = decryptMessage(decryptedThread.latestMessage);
+  }
+
+  res.status(200).json({ thread: decryptedThread });
 });
 
 // @desc Create a message in a thread
@@ -121,9 +151,12 @@ const createMessage = asyncHandler(async (req, res) => {
     return;
   }
 
+  // Chiffrer le texte du message avant de sauvegarder
+  const encryptedText = encryptMessage(text);
+
   const message = {
     id: messageId,
-    text,
+    text: encryptedText, // Stocker le texte chiffré
     createdAt,
     user: {
       _id: userId,
@@ -139,10 +172,25 @@ const createMessage = asyncHandler(async (req, res) => {
   }
 
   thread.messages.push(message);
-  thread.latestMessage = text;
+  // Chiffrer aussi le latestMessage
+  thread.latestMessage = encryptMessage(text);
 
   const updatedThread = await thread.save();
-  res.status(200).json({ updatedThread });
+
+  // Déchiffrer pour la réponse
+  const decryptedThread = updatedThread.toObject();
+  if (decryptedThread.latestMessage) {
+    decryptedThread.latestMessage = decryptMessage(decryptedThread.latestMessage);
+  }
+  // Déchiffrer tous les messages
+  if (decryptedThread.messages) {
+    decryptedThread.messages = decryptedThread.messages.map((msg: any) => ({
+      ...msg,
+      text: decryptMessage(msg.text),
+    }));
+  }
+
+  res.status(200).json({ updatedThread: decryptedThread });
 });
 
 // @desc Get messages in a thread
@@ -159,11 +207,19 @@ const getInnerMessages = asyncHandler(async (req, res) => {
   }
 
   let messages: IMessage[] = thread.messages || [];
-  messages = messages.sort(
+  
+  // Déchiffrer tous les messages
+  const decryptedMessages = messages.map((msg: any) => ({
+    ...msg.toObject ? msg.toObject() : msg,
+    text: decryptMessage(msg.text),
+  }));
+
+  // Trier par date
+  const sortedMessages = decryptedMessages.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  res.status(200).json({ messages });
+  res.status(200).json({ messages: sortedMessages });
 });
 
 // @desc Delete a thread

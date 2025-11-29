@@ -1,20 +1,25 @@
 import express from "express";
 import {
-  createUser,
   getUser,
-  loginUser,
   deleteUser,
   getUsers,
   updateUser,
   getUserByEmail,
-  checkEmail,
 } from "../controllers/userController";
+import { createUser, loginUser, refreshToken } from "../controllers/authController";
+import {
+  loginLimiter,
+  registerLimiter,
+} from "../middleware/rateLimiter";
 
 const userRouter = express.Router();
 
-userRouter.route("/").post(createUser);
-userRouter.route("/emailExists").post(checkEmail);
-userRouter.route("/login").post(loginUser);
+// Auth routes (publiques - pas d'authentification)
+userRouter.route("/").post(registerLimiter, createUser);
+userRouter.route("/login").post(loginLimiter, loginUser);
+userRouter.route("/refresh").post(refreshToken);
+
+// User routes (privées - authentification gérée par conditionalAuth dans app.ts)
 userRouter.route("/except/:id/:interestedBy/:ageOfInterest").get(getUsers);
 userRouter.route("/:id").get(getUser).delete(deleteUser).put(updateUser);
 userRouter.route("/email/:email").get(getUserByEmail);

@@ -1,7 +1,11 @@
 import { connect } from "mongoose";
 
 const connectDB = async () => {
-  console.log("ENV", process.env.MONGO_URI);
+  if (process.env.NODE_ENV === "dev") {
+    console.log("ENV", process.env.MONGO_URI);
+  } else {
+    console.log("MONGO PROD, do not log the URI");
+  }
   try {
     if (!process.env.MONGO_URI) {
       return;

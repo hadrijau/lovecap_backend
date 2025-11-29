@@ -9,6 +9,7 @@ import {
 
 const matchRouter = express.Router();
 
+// Toutes les routes match sont privées (authentification gérée par conditionalAuth dans app.ts)
 matchRouter.route("/").post(addMatch);
 matchRouter.route("/:id").get(getMatches).delete(deleteLastMatch);
 matchRouter.route("/:id/:matchId").delete(deleteMatch);

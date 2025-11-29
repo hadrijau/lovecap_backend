@@ -44,7 +44,7 @@ enum SubscriptionType {
 
 const userSchema = new Schema<IUser>({
   firstname: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   genre: { type: String, required: true },
   interestedBy: { type: String, required: true },
@@ -55,7 +55,7 @@ const userSchema = new Schema<IUser>({
   profilePicture: { type: String, required: true },
   handicapVisible: { type: Boolean, required: true },
   compatibility: { type: [Schema.Types.Mixed], required: true },
-  expoPushToken: { type: String, required: true },
+  expoPushToken: { type: String, required: false, default: "" },
   notificationsEnabledNewMatch: { type: Boolean, required: true },
   notificationsEnabledNewMessage: { type: Boolean, required: true },
   notificationsEnabledSuperLike: { type: Boolean, required: true },
@@ -91,7 +91,7 @@ userSchema.methods.matchPassword = async function (
 // Define the pre-save hook for password hashing
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

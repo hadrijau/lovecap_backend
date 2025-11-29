@@ -1,100 +1,20 @@
 import User from "../models/userModel";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
-import generateToken from "../utils/generateToken";
-import { Request, Response } from "express";
-
-// @desc Register User
-// @route POST /api/users
-// @access Public
-const createUser = asyncHandler(async (req, res) => {
-  const {
-    firstname,
-    email,
-    password,
-    genre,
-    interestedBy,
-    dateOfBirth,
-    ageOfInterest,
-    handicap,
-    handicapVisible,
-    profilePicture,
-    expoPushToken,
-    biography,
-    maxNumberOfLike,
-    dateWhenUserCanSwipeAgain,
-    numberOfLikeNotifications,
-    pictures,
-    boost,
-    notificationsEnabledNewMatch,
-    notificationsEnabledNewMessage,
-    notificationsEnabledSuperLike,
-    notificationsEnabledPromotions,
-    receivedSuperLike,
-    compatibility,
-    notifications,
-    numberOfMessageNotifications,
-    subscription,
-    endOfBoost,
-    numberOfBoostRemaining,
-    addBoostDate,
-    numberOfSuperLikeRemaining,
-    addSuperLikeDate,
-  } = req.body;
-
-  const user = await User.create({
-    email,
-    password,
-    firstname,
-    genre,
-    interestedBy,
-    dateOfBirth,
-    ageOfInterest,
-    handicap,
-    profilePicture,
-    handicapVisible,
-    pictures,
-    compatibility,
-    expoPushToken,
-    notifications,
-    biography,
-    boost,
-    numberOfLikeNotifications,
-    numberOfMessageNotifications,
-    maxNumberOfLike,
-    dateWhenUserCanSwipeAgain,
-    notificationsEnabledNewMatch,
-    notificationsEnabledNewMessage,
-    notificationsEnabledSuperLike,
-    notificationsEnabledPromotions,
-    receivedSuperLike,
-    subscription,
-    endOfBoost,
-    numberOfBoostRemaining,
-    addBoostDate,
-    numberOfSuperLikeRemaining,
-    addSuperLikeDate,
-  });
-
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      email: user.email,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(400);
-    throw new Error("Error creating user");
-  }
-});
+import Match from "../models/matchModel";
+import Message from "../models/messageModel";
 
 // @desc Update User
 // @route PUT /api/users/:id
-// @access Public
+// @access Private
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   const updates = req.body;
+
+  // Vérifier que l'utilisateur authentifié est le propriétaire du compte
+  if (req.user?.userId !== userId) {
+    res.status(403);
+    throw new Error("Vous n'êtes pas autorisé à modifier ce compte");
+  }
 
   // Find the user by ID
   const user = await User.findById(userId);
@@ -108,7 +28,10 @@ const updateUser = asyncHandler(async (req, res) => {
   // Update the user fields
   user.firstname = updates.firstname || user.firstname;
   user.email = updates.email || user.email;
-  user.password = updates.password || user.password; // Make sure to hash the password if it's updated
+  // Le mot de passe sera automatiquement hashé par le hook pre-save si modifié
+  if (updates.password) {
+    user.password = updates.password;
+  }
   user.genre = updates.genre || user.genre;
   user.interestedBy = updates.interestedBy || user.interestedBy;
   user.dateOfBirth = updates.dateOfBirth || user.dateOfBirth;
@@ -170,52 +93,17 @@ const updateUser = asyncHandler(async (req, res) => {
   res.status(200).json(updatedUser);
 });
 
-// @desc Register User
-// @route POST /api/users/emailExists
-// @access Public
-const checkEmail = asyncHandler(async (req: Request, res: Response) => {
-  const { email } = req.body;
-
-  if (!email) {
-    res.status(400).json({ message: "Email requis" });
-    return;
-  }
-
-  const userExists = await User.findOne({ email });
-
-  res.status(200).json({ exists: !!userExists });
-});
-
-// @desc Register User
-// @route POST /api/users/login
-// @access Public
-const loginUser = asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findOne({ email: req.body.email });
-  const secret = process.env.JWT_SECRET!;
-  if (!user) {
-    res.status(400).send("The user not found");
-    throw new Error("User not found");
-  }
-
-  if (user && bcrypt.compareSync(req.body.password, user.password)) {
-    const token = jwt.sign(
-      {
-        userId: user.id,
-      },
-      secret,
-      { expiresIn: "365d" }
-    );
-    res.status(200).send({ user: user.email, token: token });
-  } else {
-    res.status(400).send("password is wrong!");
-  }
-});
-
-// @desc Register User
+// @desc Get Users for swiping
 // @route GET /api/users/except/:id/:interestedBy/:ageOfInterest
-// @access Public
+// @access Private
 const getUsers = asyncHandler(async (req, res) => {
   const { id, interestedBy, ageOfInterest } = req.params;
+
+  // Vérifier que l'ID dans l'URL correspond à l'utilisateur authentifié
+  if (req.user?.userId !== id) {
+    res.status(403);
+    throw new Error("Vous n'êtes pas autorisé à accéder à ces profils");
+  }
 
   const [minAge, maxAge] = ageOfInterest.split("-").map(Number);
 
@@ -257,14 +145,82 @@ const getUsers = asyncHandler(async (req, res) => {
 
 // @desc Get User
 // @route GET /api/users/:id
-// @access Public
+// @access Private
 const getUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const user = await User.findById(id).select("-passwordHash");
+  const authenticatedUserId = req.user?.userId;
+
+  if (!authenticatedUserId) {
+    res.status(401);
+    throw new Error("Non authentifié");
+  }
+
+  // Si l'utilisateur demande son propre profil, autoriser
+  if (authenticatedUserId === id) {
+    const user = await User.findById(id).select("-password");
+    if (!user) {
+      res.status(404).json({ message: "The user with the given ID was not found." });
+    } else {
+      res.status(200).send(user);
+    }
+    return;
+  }
+
+  // Sinon, vérifier si c'est un match ou une conversation
+  let hasAccess = false;
+
+  // Vérifier si l'utilisateur authentifié a liké l'utilisateur demandé
+  const matchWhereUserLiked = await Match.findOne({
+    userWhoReceivesTheLike: id,
+  });
+  if (matchWhereUserLiked) {
+    const hasLiked = matchWhereUserLiked.matches.some(
+      (match) => match.userWhoGivesTheLike === authenticatedUserId
+    );
+    if (hasLiked) {
+      hasAccess = true;
+    }
+  }
+
+  // Vérifier si l'utilisateur demandé a liké l'utilisateur authentifié
+  if (!hasAccess) {
+    const matchWhereTargetLiked = await Match.findOne({
+      userWhoReceivesTheLike: authenticatedUserId,
+    });
+    if (matchWhereTargetLiked) {
+      const hasBeenLiked = matchWhereTargetLiked.matches.some(
+        (match) => match.userWhoGivesTheLike === id
+      );
+      if (hasBeenLiked) {
+        hasAccess = true;
+      }
+    }
+  }
+
+  // Vérifier s'ils ont une conversation
+  if (!hasAccess) {
+    const conversations = await Message.find({
+      members: {
+        $elemMatch: { id: authenticatedUserId },
+      },
+    });
+    // Vérifier si l'utilisateur demandé est aussi dans une de ces conversations
+    const hasConversation = conversations.some((conv) =>
+      conv.members.some((member: any) => member.id === id)
+    );
+    if (hasConversation) {
+      hasAccess = true;
+    }
+  }
+
+  if (!hasAccess) {
+    res.status(403);
+    throw new Error("Vous n'êtes pas autorisé à accéder à ce profil");
+  }
+
+  const user = await User.findById(id).select("-password");
   if (!user) {
-    res
-      .status(500)
-      .json({ message: "The user with the given ID was not found." });
+    res.status(404).json({ message: "The user with the given ID was not found." });
   } else {
     res.status(200).send(user);
   }
@@ -272,27 +228,41 @@ const getUser = asyncHandler(async (req, res) => {
 
 // @desc Get User
 // @route GET /api/users/email/:email
-// @access Public
+// @access Private
 const getUserByEmail = asyncHandler(async (req, res) => {
   const { email } = req.params;
   const user = await User.findOne({ email: email });
 
   if (!user) {
-    res
-      .status(404)
-      .json({ message: "The user with the given email was not found." });
-  } else {
-    res.status(200).send(user);
+    res.status(404).json({ message: "The user with the given email was not found." });
+    return;
   }
 
-  return;
+  // Vérifier que l'utilisateur authentifié demande son propre profil
+  if (req.user?.userId !== user._id.toString()) {
+    res.status(403);
+    throw new Error("Vous n'êtes pas autorisé à accéder à ce profil");
+  }
+
+  // Retourner l'utilisateur sans le mot de passe
+  const userObj = user.toObject();
+  const { password, ...userWithoutPassword } = userObj;
+  res.status(200).send(userWithoutPassword);
 });
 
 // @desc Delete user
 // @route DELETE /api/users/:id
-// @access Private/admin
+// @access Private
 const deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const userId = req.params.id;
+
+  // Vérifier que l'utilisateur authentifié est le propriétaire du compte
+  if (req.user?.userId !== userId) {
+    res.status(403);
+    throw new Error("Vous n'êtes pas autorisé à supprimer ce compte");
+  }
+
+  const user = await User.findById(userId);
   if (user) {
     await user.deleteOne();
     res.json({ message: "User removed" });
@@ -303,10 +273,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 export {
-  createUser,
   updateUser,
-  checkEmail,
-  loginUser,
   getUser,
   deleteUser,
   getUsers,
