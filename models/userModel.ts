@@ -33,6 +33,8 @@ export interface IUser extends Document {
   notifications: string[];
   numberOfMessageNotifications: number;
   subscription: SubscriptionType | null;
+  resetPasswordCode?: string;
+  resetPasswordExpires?: Date;
 
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
@@ -78,6 +80,8 @@ const userSchema = new Schema<IUser>({
     enum: [...Object.values(SubscriptionType), null],
     required: false,
   },
+  resetPasswordCode: { type: String, required: false },
+  resetPasswordExpires: { type: Date, required: false },
 });
 
 // Define the matchPassword method

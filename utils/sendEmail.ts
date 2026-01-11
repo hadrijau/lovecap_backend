@@ -6,16 +6,8 @@ var apiKey = defaultClient.authentications["api-key"];
 apiKey.apiKey = process.env.SENDINBLUE_API_KEY;
 var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-const sendinblue = (sendSmtpEmail: any) => {
-  apiInstance.sendTransacEmail(sendSmtpEmail).then(
-    function (data: any) {
-      return true;
-    },
-    function (error: any) {
-      console.error(error);
-      return false;
-    }
-  );
+const sendinblue = (sendSmtpEmail: any): Promise<any> => {
+  return apiInstance.sendTransacEmail(sendSmtpEmail);
 };
 
 export default sendinblue;

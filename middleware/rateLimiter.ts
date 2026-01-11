@@ -64,3 +64,26 @@ export const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Rate limiter pour la demande de réinitialisation de mot de passe
+// Limite à 3 tentatives par heure pour éviter le spam
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 3, // 3 tentatives max
+  message: {
+    error: "Trop de demandes de réinitialisation. Veuillez réessayer dans 1 heure.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter pour la vérification du code de réinitialisation
+// Limite à 5 tentatives par 15 minutes pour éviter le brute force
+export const verifyResetCodeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 tentatives max
+  message: {
+    error: "Trop de tentatives de vérification. Veuillez réessayer dans 15 minutes.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

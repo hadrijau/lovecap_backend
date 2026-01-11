@@ -6,6 +6,8 @@ import {
   verifyToken,
 } from "../utils/generateTokens";
 import { Request, Response } from "express";
+import crypto from "crypto";
+import sendinblue from "../utils/sendEmail";
 
 
 // @desc Register User
@@ -114,4 +116,123 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { createUser, loginUser, refreshToken };
+// @desc Request password reset
+// @route POST /api/users/forgot-password
+// @access Public
+const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400);
+    throw new Error("Veuillez fournir un email");
+  }
+
+  // Recherche de l'utilisateur
+  const user = await User.findOne({ email });
+
+  // Message générique pour éviter l'énumération d'emails
+  if (!user) {
+    res.status(200).json({
+      message: "Si cet email existe, un code de vérification a été envoyé",
+    });
+    return;
+  }
+
+  // Générer un code à 6 chiffres
+  const resetCode = crypto.randomInt(100000, 999999).toString();
+
+  // Définir l'expiration à 15 minutes
+  const expires = new Date();
+  expires.setMinutes(expires.getMinutes() + 15);
+
+  // Enregistrer le code et l'expiration
+  user.resetPasswordCode = resetCode;
+  user.resetPasswordExpires = expires;
+  await user.save();
+
+  // Envoyer l'email avec le code
+  try {
+    await sendinblue({
+      to: [{ email }],
+      subject: "Réinitialisation de votre mot de passe Love&Cap",
+      htmlContent: `
+        <html>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2 style="color: #1E388C;">Réinitialisation de votre mot de passe</h2>
+            <p>Bonjour,</p>
+            <p>Vous avez demandé à réinitialiser votre mot de passe Love&Cap.</p>
+            <p>Voici votre code de vérification :</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #48BBC1; letter-spacing: 5px; margin: 0;">${resetCode}</h1>
+            </div>
+            <p>Ce code est valable pendant 15 minutes.</p>
+            <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+            <p style="margin-top: 30px;">L'équipe Love&Cap</p>
+          </body>
+        </html>
+      `,
+      sender: { email: "dev.lovecap@gmail.com", name: "Love&Cap" },
+    });
+    console.log(`Email envoyé à ${email} avec le code: ${resetCode}`);
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email:", error);
+    // On ne révèle pas l'erreur à l'utilisateur pour des raisons de sécurité
+  }
+
+  res.status(200).json({
+    message: "Si cet email existe, un code de vérification a été envoyé",
+  });
+});
+
+// @desc Verify reset code and generate access token
+// @route POST /api/users/verify-confirmation
+// @access Public
+const verifyResetCode = asyncHandler(async (req: Request, res: Response) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    res.status(400);
+    throw new Error("Veuillez fournir un email et un code");
+  }
+
+  // Recherche de l'utilisateur
+  const user = await User.findOne({ email });
+
+  if (!user || !user.resetPasswordCode || !user.resetPasswordExpires) {
+    res.status(400);
+    throw new Error("Code invalide ou expiré");
+  }
+
+  // Vérifier si le code a expiré
+  if (new Date() > user.resetPasswordExpires) {
+    // Supprimer le code expiré
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(400);
+    throw new Error("Code expiré");
+  }
+
+  // Vérifier le code
+  if (user.resetPasswordCode !== code) {
+    res.status(400);
+    throw new Error("Code invalide");
+  }
+
+  // Code valide : supprimer le code et générer un access token
+  user.resetPasswordCode = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  // Générer un access token
+  const accessToken = generateAccessToken(user._id.toString());
+
+  res.status(200).json({
+    message: "Code vérifié avec succès",
+    accessToken,
+    userId: user._id,
+  });
+});
+
+export { createUser, loginUser, refreshToken, forgotPassword, verifyResetCode };
