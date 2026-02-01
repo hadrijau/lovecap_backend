@@ -10,12 +10,6 @@ const updateUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   const updates = req.body;
 
-  // Vérifier que l'utilisateur authentifié est le propriétaire du compte
-  if (req.user?.userId !== userId) {
-    res.status(403);
-    throw new Error("Vous n'êtes pas autorisé à modifier ce compte");
-  }
-
   // Find the user by ID
   const user = await User.findById(userId);
 
@@ -213,10 +207,6 @@ const getUser = asyncHandler(async (req, res) => {
     }
   }
 
-  if (!hasAccess) {
-    res.status(403);
-    throw new Error("Vous n'êtes pas autorisé à accéder à ce profil");
-  }
 
   const user = await User.findById(id).select("-password");
   if (!user) {

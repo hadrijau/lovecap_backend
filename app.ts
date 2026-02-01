@@ -35,6 +35,11 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () =>
-  console.log(`Server running in ${process.env.NODE_ENV} on port ${PORT}`)
-);
+// Sur Vercel, on n'appelle pas listen : le runtime utilise l'app exportée
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () =>
+    console.log(`Server running in ${process.env.NODE_ENV} on port ${PORT}`)
+  );
+}
+
+export default app;
